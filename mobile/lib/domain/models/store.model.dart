@@ -96,6 +96,14 @@ enum StoreKey<T> {
 
   syncMigrationStatus<String>._(1013);
 
+  // Auto update server IPv6 from Gitee
+  enableGiteeIpv6Update<bool>._(1014),
+  giteeAccessToken<String>._(1015),
+  giteeUsername<String>._(1016),
+  giteeRepoName<String>._(1017),
+  giteeFilePath<String>._(1018),
+  giteeInterfaceName<String>._(1019);
+
   const StoreKey._(this.id);
   final int id;
   Type get type => T;

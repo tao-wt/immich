@@ -294,7 +294,20 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
         .read(authProvider.notifier)
         .setOpenApiServiceEndpoint()
         .then(logConnectionInfo)
+        .then((_) => _updateServerIpv6FromGitee())
         .whenComplete(() => resumeSession());
+  }
+
+  Future<void> _updateServerIpv6FromGitee() async {
+    final giteeService = ref.read(giteeIpv6ServiceProvider);
+    if (!giteeService.isEnabled()) {
+      return;
+    }
+    try {
+      await giteeService.updateServerAddress();
+    } catch (e) {
+      log.info("Failed to update IPv6 from Gitee: $e");
+    }
   }
 
   void logConnectionInfo(String? endpoint) {
