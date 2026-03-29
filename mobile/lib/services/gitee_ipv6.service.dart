@@ -220,7 +220,7 @@ class GiteeIpv6Service {
         _log.info("External list is empty, adding new endpoint");
         final newEndpoint = AuxilaryEndpoint(
           url: newExternalUrl,
-          status: const AuxCheckStatus.unknown(),
+          status: AuxCheckStatus.unknown,
         );
         list.add(jsonDecode(newEndpoint.toJson()));
       } else {
@@ -231,7 +231,7 @@ class GiteeIpv6Service {
           return newExternalUrl;
         }
         _log.info("External IPv6 address changed, replacing first entry");
-        final newFirst = first.copyWith(url: newExternalUrl, status: const AuxCheckStatus.unknown());
+        final newFirst = first.copyWith(url: newExternalUrl, status: AuxCheckStatus.unknown);
         list[0] = jsonDecode(newFirst.toJson());
       }
 
