@@ -94,7 +94,7 @@ enum StoreKey<T> {
   cleanupCutoffDaysAgo<int>._(1011),
   cleanupDefaultsInitialized<bool>._(1012),
 
-  syncMigrationStatus<String>._(1013);
+  syncMigrationStatus<String>._(1013),
 
   // Auto update server IPv6 from Gitee
   enableGiteeIpv6Update<bool>._(1014),
