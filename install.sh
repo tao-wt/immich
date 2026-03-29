@@ -2,6 +2,7 @@
 set -o nounset
 set -o pipefail
 
+
 create_immich_directory() {
   local -r Tgt='./immich-app'
   echo "Creating Immich directory..."
