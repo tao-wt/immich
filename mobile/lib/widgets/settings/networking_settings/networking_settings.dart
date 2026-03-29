@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -208,22 +209,24 @@ class _GiteeIpv6Settings extends HookConsumerWidget {
     final pathController = useTextEditingController(text: path);
     final interfaceController = useTextEditingController(text: interface);
     final isLoading = useState(false);
-    final lastResult = useState<String?>(null);
+    final lastResultIp = useState<String?>(null);
+    final lastResultMessage = useState<String?>(null);
 
     Future<void> manualUpdate() async {
       isLoading.value = true;
-      lastResult.value = null;
+      lastResultIp.value = null;
+      lastResultMessage.value = null;
 
       try {
-        final result = await ref.read(giteeIpv6ServiceProvider).updateServerAddress();
+        final result = await ref.read(giteeIpv6ServiceProvider).fetchLatestIpv6();
         if (result != null) {
-          lastResult.value = "gitee_update_success".tr(args: [result]);
+          lastResultIp.value = result;
         } else {
-          lastResult.value = "gitee_update_failed".tr();
+          lastResultMessage.value = "gitee_fetch_failed".tr();
         }
       } catch (e, stack) {
-        _log.severe("Error manual updating from Gitee", e, stack);
-        lastResult.value = "gitee_update_error".tr(args: [e.toString()]);
+        _log.severe("Error fetching from Gitee", e, stack);
+        lastResultMessage.value = "gitee_fetch_error".tr(args: [e.toString()]);
       } finally {
         isLoading.value = false;
       }
@@ -353,23 +356,70 @@ class _GiteeIpv6Settings extends HookConsumerWidget {
                                   height: 20,
                                   child: CircularProgressIndicator(strokeWidth: 2),
                                 )
-                              : Text("gitee_manual_update".tr()),
+                              : Text("gitee_manual_fetch".tr()),
                         ),
                       ),
-                      if (lastResult.value != null) ...[
+                      if (lastResultMessage.value != null) ...[
                         const SizedBox(height: 12),
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: lastResult.value!.startsWith('✅')
-                                ? Colors.green.withAlpha(50)
-                                : Colors.red.withAlpha(50),
+                            color: Colors.red.withAlpha(50),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            lastResult.value!,
+                            lastResultMessage.value!,
                             style: context.textTheme.bodySmall,
+                          ),
+                        ),
+                      ],
+                      if (lastResultIp.value != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withAlpha(50),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "gitee_latest_ipv6".tr(),
+                                style: context.textTheme.titleSmall,
+                              ),
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () {
+                                  Clipboard.setData(ClipboardData(text: lastResultIp.value!));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("gitee_ip_copied".tr()),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    color: context.colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(color: context.colorScheme.primary),
+                                  ),
+                                  child: Text(
+                                    lastResultIp.value!,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontFamily: 'GoogleSansCode',
+                                      color: context.primaryColor,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],

@@ -184,9 +184,9 @@ class GiteeIpv6Service {
     return true;
   }
 
-  /// 更新服务器地址
-  /// 如果获取成功，则更新外部网络列表中的第一个地址
-  Future<String?> updateServerAddress() async {
+  /// 获取最新 IPv6 地址
+  /// 只返回提取到的 IPv6，不更新存储
+  Future<String?> fetchLatestIpv6() async {
     // 获取文件内容
     final content = await fetchFileContent();
     if (content == null) {
@@ -200,49 +200,7 @@ class GiteeIpv6Service {
       return null;
     }
 
-    // 获取当前保存的外部端点列表
-    final externalJson = Store.tryGet(StoreKey.externalEndpointList);
-    if (externalJson == null) {
-      _log.warning("No external endpoint list found in storage");
-      return null;
-    }
-
-    try {
-      // 解析现有列表
-      List<dynamic> list = jsonDecode(externalJson);
-
-      // 直接构建固定格式 URL: http://[ipv6]:2283
-      final newExternalUrl = "http://[$newIpv6]:2283";
-      _log.info("New external IPv6 URL: $newExternalUrl");
-
-      if (list.isEmpty) {
-        // 列表为空，添加第一个
-        _log.info("External list is empty, adding new endpoint");
-        final newEndpoint = AuxilaryEndpoint(
-          url: newExternalUrl,
-          status: AuxCheckStatus.unknown,
-        );
-        list.add(jsonDecode(newEndpoint.toJson()));
-      } else {
-        // 覆盖第一个端点
-        final first = AuxilaryEndpoint.fromJson(list[0] as String);
-        if (newExternalUrl == first.url) {
-          _log.info("External IPv6 address unchanged, skipping update");
-          return newExternalUrl;
-        }
-        _log.info("External IPv6 address changed, replacing first entry");
-        final newFirst = first.copyWith(url: newExternalUrl, status: AuxCheckStatus.unknown);
-        list[0] = jsonDecode(newFirst.toJson());
-      }
-
-      // 保存回存储
-      await Store.put(StoreKey.externalEndpointList, jsonEncode(list));
-
-      _log.info("External IPv6 address updated successfully to: $newExternalUrl");
-      return newExternalUrl;
-    } catch (e, stack) {
-      _log.severe("Failed to update external IPv6 address", e, stack);
-      return null;
-    }
+    _log.info("Successfully fetched IPv6 from Gitee: $newIpv6");
+    return newIpv6;
   }
 }
