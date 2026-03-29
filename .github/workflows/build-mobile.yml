@@ -54,6 +54,10 @@ jobs:
         run: make pigeon
         working-directory: ./mobile
 
+      - name: Generate riverpod code
+        working-directory: ./mobile
+        run: dart run build_runner build --delete-conflicting-outputs
+
       - name: Build Android APK (debug)
         working-directory: ./mobile
         run: flutter build apk --debug --split-per-abi --target-platform android-arm,android-arm64,android-x64
